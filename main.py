@@ -159,7 +159,7 @@ class CalidadAgua(Form):
         self.VerDpto = Label(self)
         self.VerDpto.SetProps(Parent = self, Text = "Filtrar por departamento: ", Position = Position(PointF(370, 150)),  Width=150, Height=15, WordWrap=True, TextAlign="Leading")
  
-        # Crear cuadro de texto "VerDpto"
+        # Crear cuadro de texto "EscribirDpto"
         self.EscribirDpto = Edit(self)
         self.EscribirDpto.SetProps(Parent = self, Position = Position(PointF(520, 150)), Height = 15)
 
@@ -167,16 +167,21 @@ class CalidadAgua(Form):
         # Crear label para filtro con Municipio "VerMun"
         self.VerMun = Label(self)
         self.VerMun.SetProps(Parent = self, Text = "Filtrar por municipio: ", Position = Position(PointF(370, 170)),  Width=150, Height=15, WordWrap=True, TextAlign="Leading")
- 
-        # Crear cuadro de texto "VerDpto"
+
+        # Crear cuadro de texto "EscribirMun"
         self.EscribirMun = Edit(self)
         self.EscribirMun.SetProps(Parent = self, Position = Position(PointF(520, 170)), Height = 15)
 
 
-        # Creating a Button named addEmployee that, when clicked, adds the entries in the textboxes to the database. The Button also displays some text specified in the “Text” parameter.
-        #self.addEmployee = Button(self)
-        #self.addEmployee.SetProps(Parent = self, Text = "Add Employee", Position = Position(PointF(250, 115)), Width = 90, OnClick = self.__button_click_add)
+        # Crear label para chatbot "Chatbot"
+        self.Chatbot = Label(self)
+        self.Chatbot.SetProps(Parent = self, Text = "Chatbot", Position = Position(PointF(600, 75)),  Width=150, Height=20, WordWrap=True, TextAlign="Leading")
  
+        # Crear cuadro de texto "EscribirChatbot"
+        self.EscribirChatbot = Edit(self)
+        self.EscribirChatbot.SetProps(Parent = self, Position = Position(PointF(600, 100)), Height = 80)
+
+
         # Creat boton “view” que cuando se da clic muestra la lista de todas las mediciones
         self.view = Button(self)
         self.view.SetProps(Parent = self, Text = "Ver todas las mediciones", Position = Position(PointF(370, 25)), Width = 250, OnClick = self.__button_click_view)
@@ -186,6 +191,11 @@ class CalidadAgua(Form):
         self.viewId.SetProps(Parent = self, Text = "Filtrar", Position = Position(PointF(380, 100)), Width = 200, OnClick = self.__button_click_id)
  
          # Creat boton “viewDM” que cuando se da clic muestra las mediciones del departamento y municipio
+        self.viewDM = Button(self)
+        self.viewDM.SetProps(Parent = self, Text = "Filtrar", Position = Position(PointF(380, 195)), Width = 200, OnClick = self.__button_click_DM)
+
+
+         # Creat boton “viewchatbot” que cuando se da clic muestra las mediciones del departamento y municipio
         self.viewDM = Button(self)
         self.viewDM.SetProps(Parent = self, Text = "Filtrar", Position = Position(PointF(380, 195)), Width = 200, OnClick = self.__button_click_DM)
 
@@ -201,21 +211,7 @@ class CalidadAgua(Form):
     def __form_close(self, sender, action):
         action = "caFree"
  
-    #def __button_click_add(self, sender):
- 
-        # Initializing a JSON with all the employee details from the form.
-        #myobj = {"id":int(self.editId.text), "firstName":self.editFName.text,"lastName":self.editLName.text,"gender":self.editGender.text,"role":self.editRole.text}
- 
-        # Posting the JSON using FASTApi to our Database.
-        #x = requests.post(BASE+"users", json = myobj)
- 
-        # Adding the new Employee to our Database.
-        #self.list.items.add(x.text)
-        #self.list.items.add("Your Entry was successfully added!")
-   
-        # Resetting the text boxes as empty.
-        #self.editFName.text = self.editLName.text = self.editGender.text = self.editRole.text = self.editId.text = ""
- 
+
     def __button_click_view(self, sender):
         # Obtener los datos
         response = requests.get(BASE + "water")
