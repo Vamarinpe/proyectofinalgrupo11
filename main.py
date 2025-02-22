@@ -103,17 +103,24 @@ def get_water_departamento(Departamento: str, Municipio:str=None):
 def chatbot(query: str):
     # Dividimos la consulta en palabras clave, para entender mejor la intención del usuario
     query_words = word_tokenize(query.lower())
+
+    # Definir respuestas predefinidas
+    respuestas = {
+        "enfermedades": "Las enfermedades relacionadas con el agua incluyen cólera, hepatitis A y otras.",
+        "sintomas": "Los síntomas de enfermedades transmitidas por el agua pueden incluir diarrea, fiebre y vómitos.",
+    }
     
     # Buscamos sinónimos de las palabras clave para ampliar la búsqueda
     synonyms = {word for q in query_words for word in get_synonyms(q)} | set(query_words)
 
-    # Filtramos la lista de películas buscando coincidencias en el año
-    results = [m for m in water_list if any (s in m['Periodo'].lower() for s in synonyms)]
 
-     # Si encontramos mediciones, enviamos la lista; si no, mostramos un mensaje de que no se encontraron coincidencias
-    return JSONResponse (content={
-        "respuesta": "Aquí tienes algunas mediciones relacionadas con el año de consulta." if results else "No encontré mediciones relacionadas con el año de consulta.",
-        "mediciones": results
+    # Verificamos si hay respuestas predefinidas
+    respuesta_predefinida = next((respuestas[word] for word in query_words if word in respuestas), None)
+
+    # Si encontramos mediciones, enviamos la lista; si no, mostramos un mensaje de que no se encontraron coincidencias
+    return JSONResponse(content={
+        "intro": "Aquí tienes la respuesta:",
+        "respuesta": respuesta_predefinida
     })
 
 
@@ -130,6 +137,7 @@ def chatbot(query: str):
 import requests
 from delphifmx import *
 
+
 BASE = "http://127.0.0.1:9000/"
 
 
@@ -141,9 +149,9 @@ class CalidadAgua(Form):
  
         # Crear label con mensaje de bienvenida "Mensaje"
         self.Mensaje = Label(self)
-        self.Mensaje.SetProps(Parent = self, Text = "Bienvenido al sistema de información de calidad de agua en Colombia\n\nEn esta aplicación usted podrá consultar mediciones de calidad del agua en diferentes municipios de Colombia entre 2007-2023 y obtener información sobre enfermedades relacionadas con la calidad del agua y sus sintomas.\nAdemás podrá hacer uso de un chatbot interactivo para realizar consultas sobre el tema", 
+        self.Mensaje.SetProps(Parent = self, Text = "Bienvenido al sistema de información de calidad de agua en Colombia\n\nEn esta aplicación usted podrá consultar mediciones de calidad del agua en diferentes municipios de Colombia entre 2007-2023, en donde podrá visualizar el IRCA y el nivel de riesgo de cada zona.\nAdemás podrá hacer uso de un chatbot interactivo para realizar consultas sobre enfermedades relacionadas con la calidad del agua, sus sintomas y otros temas afines", 
                               Position = Position(PointF(20, 20)), 
-                              Width=300, Height=160, WordWrap=True, TextAlign="Leading")
+                              Width=300, Height=180, WordWrap=True, TextAlign="Leading")
 
 
         # Crear label para filtro con id "VerId"
@@ -175,11 +183,14 @@ class CalidadAgua(Form):
 
         # Crear label para chatbot "Chatbot"
         self.Chatbot = Label(self)
-        self.Chatbot.SetProps(Parent = self, Text = "Chatbot", Position = Position(PointF(600, 75)),  Width=150, Height=20, WordWrap=True, TextAlign="Leading")
+        self.Chatbot.SetProps(Parent = self, Text = "Chatbot", Position = Position(PointF(700, 20)),  Width=150, Height=20, WordWrap=True, TextAlign="Leading")
  
         # Crear cuadro de texto "EscribirChatbot"
         self.EscribirChatbot = Edit(self)
-        self.EscribirChatbot.SetProps(Parent = self, Position = Position(PointF(600, 100)), Height = 80)
+        self.EscribirChatbot.SetProps(Parent = self, Position = Position(PointF(700, 45)), Width=320, Height = 150)
+        self.EscribirChatbot.TextSettings.WordWrap = True  
+        self.EscribirChatbot.TextSettings.HorzAlign = 'Leading'
+        self.EscribirChatbot.TextSettings.VertAlign = 'Top'
 
 
         # Creat boton “view” que cuando se da clic muestra la lista de todas las mediciones
@@ -197,12 +208,17 @@ class CalidadAgua(Form):
 
          # Creat boton “viewchatbot” que cuando se da clic muestra las mediciones del departamento y municipio
         self.viewDM = Button(self)
-        self.viewDM.SetProps(Parent = self, Text = "Filtrar", Position = Position(PointF(380, 195)), Width = 200, OnClick = self.__button_click_DM)
+        self.viewDM.SetProps(Parent = self, Text = "Consultar", Position = Position(PointF(770, 210)), Width = 200, OnClick = self.__button_click_chatbot)
 
 
         # Crear caja de texto “list” que muestra la lista de todas las mediciones
-        self.list = ListBox(self)
-        self.list.SetProps(Parent = self, Position = Position(PointF(20, 250)), Width = 1025, Height = 200)
+        self.ListBox = ListBox(self)
+        self.ListBox.SetProps(Parent = self, Position = Position(PointF(20, 250)), Width = 1025, Height = 200)
+ 
+
+         # Crear boton de Reset
+        self.ResetButton = Button(self)
+        self.ResetButton.SetProps(Parent=self, Text="Limpiar", Position=Position(PointF(100, 210)), Width=100, OnClick = self.__button_click_reset)
  
 
     def __form_show(self, sender):
@@ -217,9 +233,10 @@ class CalidadAgua(Form):
         response = requests.get(BASE + "water")
         response = response.json()
         # Mostrar los datos
-        self.list.items.text = ""
+        self.ListBox.items.text = ""
         for measure in response:
-            self.list.items.add(measure)
+            self.ListBox.items.add(measure)
+            
 
     def __button_click_id(self, sender):
         # Obtener los datos del id
@@ -227,8 +244,9 @@ class CalidadAgua(Form):
         response = requests.get(f"{BASE}/water/{myobj}")
         response = response.json()                                  
         # Mostrar los datos
-        self.list.items.text = ""
-        self.list.items.add(response)
+        self.ListBox.items.text = ""
+        self.ListBox.items.add(response)
+
 
     def __button_click_DM(self, sender):
         # Obtener los datos del dpto y mun
@@ -237,9 +255,36 @@ class CalidadAgua(Form):
         response = requests.get(f"{BASE}/water/departamento/?Departamento={dpto}&Municipio={mun}")
         response = response.json()                                  
         # Mostrar los datos
-        self.list.items.text = ""
+        self.ListBox.items.text = ""
         for measure in response:
-            self.list.items.add(measure)
+            self.ListBox.items.add(measure)
+
+
+    def __button_click_chatbot(self, sender):
+        # Obtener respuesta
+        question = str(self.EscribirChatbot.text)
+        question = question.replace(' ', '%20')
+        response = requests.get(f"{BASE}/chatbot?query={question}")
+        response = response.json()                                  
+        # Mostrar los datos
+        self.ListBox.items.text = ""
+
+        intro = response.get("intro", "No hay respuesta disponible")
+        self.ListBox.items.add(f"{intro}")
+
+        respuesta = response.get("respuesta", [])
+        self.ListBox.items.add(f"Respuesta: {respuesta}")
+
+
+
+    def __button_click_reset(self, sender):
+        self.EscribirId.Text = ""
+        self.EscribirDpto.Text = ""
+        self.EscribirMun.Text = ""
+        self.EscribirChatbot.Text = ""
+        self.ListBox.items.text = ""
+        
+
 
 
 
