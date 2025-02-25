@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import HTMLResponse, JSONResponse 
 import pandas as pd 
@@ -108,7 +109,25 @@ def chatbot(query: str):
     respuestas = {
         "enfermedades": "Las enfermedades relacionadas con el agua incluyen cólera, hepatitis A y otras.",
         "sintomas": "Los síntomas de enfermedades transmitidas por el agua pueden incluir diarrea, fiebre y vómitos.",
+        "inviable": "Que el agua sea inviable significa que no es apta para consumo humano y puede causar brotes epidémicos graves. Las enfermedades asociadas incluyen cólera, hepatitis A, fiebre tifoidea, disentería bacteriana, giardiasis, amebiasis e intoxicaciones químicas como metales pesados y pesticidas. Los riesgos incluyen la muerte, especialmente en niños, adultos mayores e inmunosuprimidos, y la contaminación del suelo y ecosistemas por agentes químicos y biológicos.",
+        "alto": "Riesgo alto significa que no es apta para consumo humano y puede causar infecciones graves. Las enfermedades asociadas incluyen diarreas infecciosas (rotavirus, norovirus, E. coli), hepatitis A, parasitosis intestinales (Giardia, Entamoeba histolytica), infecciones respiratorias por aerosoles contaminados y leptospirosis. Los riesgos incluyen enfermedades gastrointestinales, exposición a contaminantes como arsénico o plomo, y efectos negativos en la higiene personal y preparación de alimentos.",
+        "medio": "Riesgo medio significa que no es apta para consumo humano, pero puede usarse con precauciones para limpieza e higiene, como hervirla o filtrarla. Las enfermedades asociadas incluyen gastroenteritis bacteriana y viral, infecciones de piel y ojos (Staphylococcus, Pseudomonas), parásitos intestinales (Ascaris, Trichuris), y dermatitis por contacto. Los riesgos incluyen un aumento de enfermedades gastrointestinales en poblaciones vulnerables y la posible presencia de residuos fecales y bacterias patógenas. Si se usa para preparar alimentos, requiere tratamiento previo.",
+        "bajo": "Riesgo bajo significa que no es apta para consumo humano, pero se puede tratar para hacerla potable mediante filtración y desinfección. Las enfermedades relacionadas incluyen gastroenteritis leve (E. coli, enterobacterias) y leves infecciones de piel y mucosas. Los riesgos incluyen bacterias coliformes y residuos orgánicos, y requiere hervirla o tratarla con cloro antes de consumirla. Tiene bajo riesgo de contaminación química.",
+        "sin": "Sin riesgo significa que es apta para consumo humano, lo que garantiza seguridad sanitaria y reducción de enfermedades. Los beneficios incluyen una mejora en la calidad de vida y productividad, además de una disminución de los costos en salud pública. Los riesgos son mínimos, pero si no se mantiene un control adecuado en la red de distribución, puede haber contaminación. También, el exceso de cloro o tratamientos puede afectar el sabor o la calidad del agua.",
+        "ahorra": "Para ahorrar agua en el hogar, cierra la llave mientras te cepillas los dientes y mientras te lavas las manos. Utiliza duchas de bajo flujo y cierra la llave mientras te enjabonas. Además, verifica y repara las fugas en llaves y tuberías, y recuerda cerrar las tuberías después de usar los grifos.",
+        "contaminacion": "La contaminación del agua se produce cuando sustancias dañinas, como productos químicos, plásticos o desechos humanos, alteran la calidad del agua. Esto puede afectar la salud humana, los ecosistemas acuáticos y la biodiversidad en general.",
+        "prevencion": "Para prevenir: no arrojes plásticos, sobras de comida u otros desechos sólidos al desagüe. Antes de lavar los platos, retira los residuos de comida y deposítalos en la basura. Evita arrojar sustancias químicas a los desagües y utiliza detergentes biodegradables. También puedes participar en la limpieza de playas, arroyos o humedales para proteger nuestros cuerpos de agua.",
+        "conciencia": "Genera conciencia: informa a tus familiares y amigos sobre la importancia del ahorro de agua y la prevención de la contaminación. Busca información sobre prácticas sostenibles que puedas aplicar en tu hogar y comunidad. Reduce el consumo de productos que requieren grandes cantidades de agua para su producción y apoya a empresas que implementan prácticas sostenibles para cuidar el medio ambiente.",
+        "colera": "Infección intestinal causada por la bacteria *Vibrio cholerae*, que provoca diarrea severa y deshidratación.",
+        "hepatitis": "Enfermedad hepática viral causada por el virus de la hepatitis A, se transmite principalmente por agua o alimentos contaminados.",
+        "tifoidea": "Infección bacteriana causada por *Salmonella typhi*, que causa fiebre, dolor abdominal y, a veces, diarrea.",
+        "bacteriana": "Infección intestinal bacteriana que causa diarrea con sangre, fiebre y dolor abdominal, causada por bacterias como *Shigella*.",
+        "giardiasis": "Infección intestinal causada por el parásito *Giardia lamblia*, que provoca diarrea, cólicos abdominales y náuseas.",
+        "amebiasis": "Enfermedad intestinal causada por el parásito *Entamoeba histolytica*, que puede causar diarrea, dolor abdominal y en algunos casos, abscesos hepáticos.",
+        "irca":" es el Índice de Riesgo de Contaminación Alimentaria, que se utiliza para evaluar el riesgo de contaminación de los alimentos y el impacto que esto puede tener en la salud pública. El IRCA tiene en cuenta factores como la calidad del agua, las condiciones de higiene en la preparación de alimentos, el almacenamiento, y el manejo de estos, para determinar el nivel de riesgo asociado con el consumo de alimentos contaminados."
     }
+
+    
     
     # Buscamos sinónimos de las palabras clave para ampliar la búsqueda
     synonyms = {word for q in query_words for word in get_synonyms(q)} | set(query_words)
@@ -272,8 +291,23 @@ class CalidadAgua(Form):
         intro = response.get("intro", "No hay respuesta disponible")
         self.ListBox.items.add(f"{intro}")
 
-        respuesta = response.get("respuesta", [])
-        self.ListBox.items.add(f"Respuesta: {respuesta}")
+        #respuesta = response.get("respuesta", [])
+        #self.ListBox.items.add(f"Respuesta: {respuesta}")
+
+        respuesta = response.get("respuesta", "")
+
+        if respuesta is None:
+            respuesta = ""
+
+        max_line_length = 180
+    
+        if len(respuesta) > max_line_length:
+            self.ListBox.items.add(f"Respuesta: ")
+            for i in range(0, len(respuesta), max_line_length):
+                chunk = respuesta[i:i + max_line_length]
+                self.ListBox.items.add(f"{chunk}")
+        else:
+            self.ListBox.items.add(f"Respuesta: {respuesta}")
 
 
 
@@ -284,9 +318,6 @@ class CalidadAgua(Form):
         self.EscribirChatbot.Text = ""
         self.ListBox.items.text = ""
         
-
-
-
 
 
 
